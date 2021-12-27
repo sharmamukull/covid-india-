@@ -1,0 +1,85 @@
+SELECT *
+ FROM `covid-d-336012.covid_data.covid`
+ where continent is not null 
+ order by date,location ;
+ ## selecting data that we need 
+ SELECT location,date,total_cases,total_deaths,new_cases,population 
+ FROM covid-d-336012.covid_data.covid
+ where continent is not null 
+ ORDER BY 2,3
+ ## looking for most infected country 
+ SELECT  distinct location,max(total_cases) as maximum_virus_count ,population,max((total_cases/population))*100 as max_case_percentage
+ FROM covid-d-336012.covid_data.covid
+ where  continent is not null 
+ group by location, population
+ ORDER BY max_case_percentage desc 
+ ## looking for country with highest death count
+ SELECT distinct location,max(cast(total_deaths as int)) as Total_deaths
+ FROM covid-d-336012.covid_data.covid
+ where  continent is not null 
+ group by location
+ ORDER BY Total_deaths desc
+ ## lets look this data according to continents 
+ SELECT continent,max(cast(total_deaths as int)) as Total_deaths
+ FROM covid-d-336012.covid_data.covid
+ where  continent is not null 
+ group by continent
+ ORDER BY Total_deaths desc
+ ## looking for total deaths over total cases in India 
+SELECT location,date,total_cases,total_deaths,(total_deaths/total_cases)*100 as death_percentage
+ FROM covid-d-336012.covid_data.covid
+ WHERE location = 'India'
+ And continent is not null 
+ ORDER BY 1,2  
+ ## looking for total case in respect of population in india
+SELECT location,date,total_cases,population,(total_cases/population)*100 as case_percentage
+ FROM covid-d-336012.covid_data.covid
+ WHERE location = 'India'
+ And continent is not null 
+ ORDER BY 1,2 
+ ## looking for total number of new cases and new deaths  in india on every new day 
+ select date,sum(new_cases)as New_case, sum(new_deaths) as New_deaths,
+ from covid-d-336012.covid_data.covid
+ where location = 'India'
+ group by date 
+ order by 1,2 
+## looking vaccination data
+ select *
+ from covid-d-336012.covid_data.covid_vaccination
+  ## selecting data that we need 
+ SELECT location,date, new_tests,total_tests, positive_rate, total_vaccinations,people_vaccinated ,people_fully_vaccinated
+ from covid-d-336012.covid_data.covid_vaccination
+ where continent is not null 
+ order by date,location
+ ## joining both tables for further analysis 
+ SELECT covid.location, covid.continent, covid.date, covid.population,covid_vaccination.total_vaccinations, covid_vaccination.people_fully_vaccinated, covid_vaccination.total_tests, covid_vaccination.new_tests
+ FROM covid-d-336012.covid_data.covid 
+ Join covid-d-336012.covid_data.covid_vaccination 
+ ON covid.location = covid_vaccination.location 
+ AND covid.date = covid_vaccination.date
+ WHERE covid.continent is not null 
+ ## looking for most vaccinated  country 
+ SELECT distinct covid.location,  covid.continent, covid.population, max(covid_vaccination.total_vaccinations) as total_vaccinated_population,
+max((covid_vaccination.total_vaccinations/covid.population))*100 as percentage_vacc_population 
+FROM covid-d-336012.covid_data.covid 
+ Join covid-d-336012.covid_data.covid_vaccination
+ ON covid.location = covid_vaccination.location 
+ WHERE covid.continent is not null
+ group by covid.location , covid.continent, covid.population, covid.date
+ order by  covid.location
+ ## looking vaccination data for india 
+ SELECT  covid_vaccination.location, covid_vaccination.date,covid.population , covid_vaccination.total_vaccinations,covid_vaccination.people_fully_vaccinated
+ FROM covid-d-336012.covid_data.covid 
+ Join covid-d-336012.covid_data.covid_vaccination
+ ON covid.location = covid_vaccination.location 
+ where covid_vaccination.location = 'India'
+ and covid_vaccination.continent is not null 
+ order by 2,3
+ ## looking for covid testing data in india 
+ SELECT distinct covid_vaccination.date, covid_vaccination.location,covid.population , covid_vaccination.new_tests, covid_vaccination.total_tests
+  FROM covid-d-336012.covid_data.covid 
+ Join covid-d-336012.covid_data.covid_vaccination
+ ON covid.location = covid_vaccination.location 
+ where covid_vaccination.location = 'India'
+ 
+ order by covid_vaccination.date
